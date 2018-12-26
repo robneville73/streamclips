@@ -7,7 +7,6 @@
 </template>
 
 <script>
-// import HelloWorld from './components/HelloWorld.vue'
 // iIhNEgBc66A homer scream
 // vwTJgWdYF_0&start=33&end=40 supplies
 // https://www.youtube.com/watch?v=llq3iuSaL1w&start=10&end=14 spongebob oh no
