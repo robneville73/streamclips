@@ -1,4 +1,18 @@
 const SockJS = require('sockjs-client');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const path = require('path');
+const history = require('connect-history-api-fallback');
+
+var app = express();
+app.use(bodyParser.json());
+app.use(cors());
+
+
+app.use('/', express.static(path.join(__dirname, '../client/dist')));
+
+var port = 4000;
 
 const url = `http://127.0.0.1:59651/api`;
 let connectionStatus = 'disconnected';
@@ -26,7 +40,6 @@ var request =  function(resourceId, methodName, ...args) {
       reject,
       completed: false
     };
-    console.debug(requestBody);
     socket.send(JSON.stringify(requestBody));
   });
 
@@ -57,13 +70,13 @@ var connectionHandler = function() {
       }
     });
     request('ScenesService', 'activeScene').then(items => {
-      console.debug(items.nodes);
+      //console.debug(items.nodes);
       items.nodes.forEach(i => {
         if (clipSources.hasOwnProperty(i.sourceId)) {
           clipSources[i.sourceId].resourceId = i.resourceId;
         }
       });
-      hideClipSource('sc_crap');
+      //hideClipSource('sc_killshot2'); // TODO: remove this!!
     });
   });
 };
@@ -80,7 +93,6 @@ var connect = function() {
 
   socket.onmessage = (e) => {
     messageHandler(e.data);
-    //console.log(e.data.toString(), 'response');
   }
 
   socket.onclose = (e) => {
@@ -93,7 +105,6 @@ var hideClipSource = function(name) {
   console.debug(`Hiding ${name}`);
   for (const sourceId in clipSources) {
     if (clipSources[sourceId].name === name) {
-      console.debug(clipSources[sourceId].resourceId, 'scene item is');
       request(clipSources[sourceId].resourceId, "setVisibility", false);
     }
   }
@@ -101,7 +112,20 @@ var hideClipSource = function(name) {
 
 connect();
 
+app.get('/api/hide/:name', (req, res) => {
+  console.debug("got here");
+  hideClipSource(req.params.name);
+  res.send('ok');
+});
 
+app.use(history({
+  index: '/',
+  verbose: true
+}));
+
+app.listen(port, () => {
+  console.debug('listening for requests...');
+}); //don't start up web server until SLOBS connection made
 
 
 
